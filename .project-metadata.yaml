@@ -25,25 +25,25 @@ runtimes:
     addons: ["Spark 3.2.0 - CDE 1.17 - HOTFIX-1"]
 
 tasks:
-  - type: Install_Dependencies
+  - type: run_session
     name: Install Dependencies
     script: scripts/install_dependencies.py
     memory: 16
     cpu: 8
 
-  - type: Load_CSV_to_Hive
+  - type: run_session
     name: Load CSV to Hive
     script: scripts/1_load_csv_to_hive.py
     memory: 16
     cpu: 8
 
-  - type: Prepare_Data
+  - type: run_session
     name: Prepare Data
     script: scripts/2_prepare_data.py
     memory: 16
     cpu: 8
 
-  - type: Train_and_save_Model
+  - type: run_session
     name: Train and save Model
     script: scripts/3_train_and_save_model.py
     memory: 16
@@ -87,13 +87,13 @@ tasks:
     memory: 16
     cpu: 8
 
-  - type: Add_noise_to_data
+  - type: run_session
     name: Add noise to data
     script: scripts/5_add_noise_data.py
     memory: 16
     cpu: 8
 
-  - type: Run_Application
+  - type: run_session
     name: Run Simulation
     script: scripts/6_simulate.py
     memory: 16
