@@ -189,7 +189,7 @@ class Simulation:
             )
 
             # Create/Refresh Monitoring Dashboard application
-            app_name = "Default Prediction Monitoring Dashboard"
+            app_name = "Cancelled Fight Prediction Monitoring Dashboard"
 
             if i == 0:
                 self.api.deploy_monitoring_application(application_name=app_name)
