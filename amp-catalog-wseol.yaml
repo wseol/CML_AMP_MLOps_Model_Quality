@@ -1,0 +1,15 @@
+name: MLOps Model Quality
+
+entries:
+   - title: MLOps Model Quality
+     label: experiments
+     short_description: .
+     long_description: >-
+        ..
+     image_path: "https://storage.googleapis.com/kaggle-datasets-images/297485/609497/34e609c3df0605806a2edf5a8750ecd7/dataset-cover.jpg?t=2019-08-12-00-56-53"
+     tags:
+      - Binary Classification
+      - XGBoost
+      - Model Monitoring
+     git_url: "https://github.com/wseol/CML_AMP_MLOps_Model_Quality"
+     is_prototype: true
