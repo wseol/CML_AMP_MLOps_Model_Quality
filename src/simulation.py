@@ -50,7 +50,9 @@ from evidently.dashboard import Dashboard
 from evidently.tabs import (
     DataDriftTab,
     NumTargetDriftTab,
-    RegressionPerformanceTab,
+    CatTargetDriftTab,
+    # RegressionPerformanceTab,
+    ClassificationPerformanceTab,
 )
 
 from src.utils import scale_prices
@@ -108,7 +110,10 @@ class Simulation:
         self.tmr = ThreadedModelRequest(self.latest_deployment_details)
         self.master_id_uuid_mapping = {}
         self.dev_mode = dev_mode
-        self.sample_size = 0.05 if self.dev_mode is True else 0.8
+        self.sample_size = 0.0002 # if self.dev_mode is True else 0.8
+        # self.sample_size = 0.002 # if self.dev_mode is True else 0.8
+        # self.sample_size = 0.02 # if self.dev_mode is True else 0.8
+        # self.sample_size = 0.1 # if self.dev_mode is True else 0.8
 
     def run_simulation(self, train_df, prod_df):
         """Operates the main logic to simulate a production scenario."""
@@ -158,7 +163,7 @@ class Simulation:
             # Query prod_df for newly *listed* records from this batch and make inference
             # TO-DO: refactor this first call into self.make_inference()
             new_listings_df = prod_df.loc[
-                prod_df.date_listed.between(
+                prod_df.date_forecast.between(
                     date_range[0], date_range[1], inclusive="left"
                 )
             ]
@@ -184,7 +189,7 @@ class Simulation:
             )
 
             # Create/Refresh Monitoring Dashboard application
-            app_name = "Price Regressor Monitoring Dashboard"
+            app_name = "Default Prediction Monitoring Dashboard"
 
             if i == 0:
                 self.api.deploy_monitoring_application(application_name=app_name)
@@ -246,7 +251,7 @@ class Simulation:
         # find total number of months in prod set
         total_months = int(
             np.ceil(
-                (prod_df.date_sold.max() - prod_df.date_sold.min())
+                (prod_df.date_departure.max() - prod_df.date_departure.min())
                 / np.timedelta64(1, "M")
             )
         )
@@ -254,8 +259,8 @@ class Simulation:
         # construct date ranges to iterate through as simulation of time (include left, exclude right)
         date_ranges = [
             [
-                (prod_df.date_sold.min() + DateOffset(months=n)),
-                (prod_df.date_sold.min() + DateOffset(months=n + months_in_batch)),
+                (prod_df.date_departure.min() + DateOffset(months=n)),
+                (prod_df.date_departure.min() + DateOffset(months=n + months_in_batch)),
             ]
             for n in range(0, total_months, months_in_batch)
         ]
@@ -294,7 +299,7 @@ class Simulation:
 
             # query records from prod_df that were newly "sold" in this batch
             new_sold_records = df.loc[
-                df.date_sold.between(date_range[0], date_range[1], inclusive="left")
+                df.date_departure.between(date_range[0], date_range[1], inclusive="left")
             ]
         else:
             # for train dataset, all records are "newly sold"
@@ -306,10 +311,10 @@ class Simulation:
         ).tolist()
 
         # get list of ground truth prices for newly sold properties
-        gts = df[df.id.isin(new_sold_records.id)].price.tolist()
+        gts = df[df.id.isin(new_sold_records.id)].TARGET.tolist()
 
         # get list of sold_dates for newly sold properties
-        sold_dates = df[df.id.isin(new_sold_records.id)].date_sold.astype(str).tolist()
+        sold_dates = df[df.id.isin(new_sold_records.id)].date_departure.astype(str).tolist()
 
         return uuids, gts, sold_dates
 
@@ -332,7 +337,7 @@ class Simulation:
 
         for uuid, gt, ds in zip(uuids, ground_truths, sold_dates):
             cdsw.track_delayed_metrics(
-                metrics={"ground_truth": gt, "date_sold": ds}, prediction_uuid=uuid
+                metrics={"ground_truth": gt, "date_departure": ds}, prediction_uuid=uuid
             )
 
         logger.info(f"Sucessfully added ground truth values to {len(uuids)} records")
@@ -413,19 +418,23 @@ class Simulation:
             current_date_range (tuple)
 
         """
+        
+        import pickle
 
+        file = open("/home/cdsw/features.pkl",'rb')
+        columns = pickle.load(file)
+        file.close()
+
+        # def build_evidently_reports(reference_df, current_df, current_date_range):
+        reference_df['ground_truth'] = reference_df['ground_truth'].astype(int)
+        current_df['ground_truth'] = current_df['ground_truth'].astype(int)
+        
         TARGET = "ground_truth"
         PREDICTION = "predicted_result"
-        NUM_FEATURES = ["sqft_living", "sqft_lot", "sqft_above"]
-        CAT_FEATURES = [
-            "waterfront",
-            "zipcode",
-            "condition",
-            "view",
-            "bedrooms",
-            "bathrooms",
-        ]
 
+        NUM_FEATURES = columns
+        CAT_FEATURES = []
+        
         column_map = {
             "target": TARGET,
             "prediction": PREDICTION,
@@ -433,37 +442,44 @@ class Simulation:
             "categorical_features": CAT_FEATURES,
             "datetime": None,
         }
+        # print(column_map)
 
         report_dir = os.path.join(
-            "apps/static/reports/",
+            "/home/cdsw/apps/static/reports/",
             f'{current_date_range[0].strftime("%m-%d-%Y")}_{current_date_range[1].strftime("%m-%d-%Y")}',
         )
         os.makedirs(report_dir, exist_ok=True)
 
         reports = [
             ("data_drift", DataDriftTab),
-            ("num_target_drift", NumTargetDriftTab),
-            ("reg_performance", RegressionPerformanceTab),
+            # ("num_target_drift", NumTargetDriftTab),
+            ("cat_target_drift", CatTargetDriftTab),
+            # ("reg_performance", RegressionPerformanceTab),
+            ("clf_performance", ClassificationPerformanceTab),
         ]
+        # print(reports)
 
         for report_name, tab in reports:
 
             dashboard = Dashboard(tabs=[tab])
 
-            dashboard.calculate(
-                reference_data=scale_prices(reference_df)
+            dashboard.calculate( #
+                # reference_data=scale_prices(reference_df)
+                reference_data=reference_df
                 .sample(n=len(current_df), random_state=42)
-                .set_index("date_sold", drop=True)
+                .set_index("date_departure", drop=True)
                 .sort_index()
                 .round(2),
-                current_data=scale_prices(current_df)
-                .set_index("date_sold", drop=True)
+                # current_data=scale_prices(current_df)
+                current_data=current_df
+                .set_index("date_departure", drop=True)
                 .sort_index()
                 .round(2),
                 column_mapping=column_map,
             )
 
             report_path = os.path.join(report_dir, f"{report_name}_report.html")
+            # print(report_path)
 
             dashboard.save(report_path)
             logger.info(f"Generated new Evidently report: {report_path}")
