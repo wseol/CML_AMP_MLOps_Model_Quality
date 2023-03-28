@@ -62,7 +62,7 @@ tasks:
       num_replicas: 1
 
   - type: build_model
-    name: Canceled_Flight_Prediction
+    name: test5
     entity_label: pr_model
     target_file_path: scripts/4_predict.py
     target_function_name: predict

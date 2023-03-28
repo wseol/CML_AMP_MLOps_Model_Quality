@@ -133,3 +133,5 @@ data/working/
 data/raw/
 apps/static/reports/
 
+.*
+!/.gitignore
