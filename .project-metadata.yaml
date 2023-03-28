@@ -1,17 +1,16 @@
-name: Continuous Model Monitoring
+name: MLOps Model Quality
 description: >-
-  Demonstration of how to perform continuous model monitoring on CML 
-  using Model Metrics and Evidently.ai dashboards
-author: Cloudera Inc.
+  -
+author: wseol test
 specification_version: 1.0
-prototype_version: 2.0
-date: "2022-04-01"
+prototype_version: 0.1
+date: "2023-03-29"
 
 environment_variables:
   DEV_MODE:
-    default: False
+    default: True
     description: >-
-      Flag to indicate if the AMP should run on a 5% sample of the dataset 
+      Flag to indicate if the AMP should run on sample dataset
       (True) to facilitate efficient project development or the full dataset (False).
     required: True
 
@@ -22,79 +21,80 @@ runtimes:
   - editor: Workbench
     kernel: Python 3.9
     edition: Standard
+    version: 2022.11
+    addons: ["Spark 3.2.0 - CDE 1.17 - HOTFIX-1"]
 
 tasks:
   - type: run_session
     name: Install Dependencies
     script: scripts/install_dependencies.py
-    memory: 2
-    cpu: 1
+    memory: 16
+    cpu: 8
+
+  - type: run_session
+    name: Load CSV to Hive
+    script: scripts/1_load_csv_to_hive.py
+    memory: 16
+    cpu: 8
 
   - type: run_session
     name: Prepare Data
-    script: scripts/prepare_data.py
-    memory: 2
-    cpu: 1
+    script: scripts/2_prepare_data.py
+    memory: 16
+    cpu: 8
 
   - type: run_session
-    name: Train Model
-    script: scripts/train.py
-    memory: 4
-    cpu: 2
+    name: Train and save Model
+    script: scripts/3_train_and_save_model.py
+    memory: 16
+    cpu: 8
 
   - type: create_model
-    name: Price Regressor
+    name: Canceled_Flight_Prediction
     entity_label: pr_model
-    description: Predict housing prices with ridge regression
+    description: .
     access_key_environment_variable: SHTM_ACCESS_KEY
     default_resources:
-      cpu: 1
-      memory: 2
+      cpu: 8
+      memory: 16
     default_replication_policy:
       type: fixed
       num_replicas: 1
 
   - type: build_model
-    name: Price Regressor
+    name: Canceled_Flight_Prediction
     entity_label: pr_model
-    target_file_path: scripts/predict.py
+    target_file_path: scripts/4_predict.py
     target_function_name: predict
     examples:
       - request:
           {
             "record":
               {
-                "id": 1962200037,
-                "price": 626000,
-                "bedrooms": 3,
-                "bathrooms": 2.25,
-                "sqft_living": 1750,
-                "sqft_lot": 1572,
-                "floors": 2.5,
-                "waterfront": 0,
-                "view": 0,
-                "condition": 3,
-                "grade": 9,
-                "sqft_above": 1470,
-                "sqft_basement": 280,
-                "yr_built": 2005,
-                "yr_renovated": 0,
-                "zipcode": 98102,
-                "lat": 47.6498,
-                "long": -122.321,
-                "sqft_living15": 2410,
-                "sqft_lot15": 3050,
-                "date_sold": "2014-05-02",
-                "date_listed": "2014-03-04",
+                "flightnum": 1628,
+                "crsdeptime": 715,
+                "crsarrtime": 820,
+                "crselapsedtime": 65.0,
+                "distance": 224.0,
+                "hour": 7,
+                "week": 37
               },
           }
 
   - type: deploy_model
     name: Price Regressor
     entity_label: pr_model
+    memory: 16
+    cpu: 8
+
+  - type: run_session
+    name: Add noise to data
+    script: scripts/5_add_noise_data.py
+    memory: 16
+    cpu: 8
 
   - type: run_session
     name: Run Simulation
-    script: scripts/simulate.py
-    memory: 4
-    cpu: 2
+    script: scripts/6_simulate.py
+    memory: 16
+    cpu: 8
