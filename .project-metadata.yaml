@@ -25,32 +25,32 @@ runtimes:
     addons: ["Spark 3.2.0 - CDE 1.17 - HOTFIX-1"]
 
 tasks:
-  - type: run_session
+  - type: Install_Dependencies
     name: Install Dependencies
     script: scripts/install_dependencies.py
     memory: 16
     cpu: 8
 
-  - type: run_session
+  - type: Load_CSV_to_Hive
     name: Load CSV to Hive
     script: scripts/1_load_csv_to_hive.py
     memory: 16
     cpu: 8
 
-  - type: run_session
+  - type: Prepare_Data
     name: Prepare Data
     script: scripts/2_prepare_data.py
     memory: 16
     cpu: 8
 
-  - type: run_session
+  - type: Train_and_save_Model
     name: Train and save Model
     script: scripts/3_train_and_save_model.py
     memory: 16
     cpu: 8
 
   - type: create_model
-    name: Canceled_Flight_Prediction
+    name: cancelld_flight_prediction
     entity_label: pr_model
     description: .
     access_key_environment_variable: SHTM_ACCESS_KEY
@@ -62,7 +62,7 @@ tasks:
       num_replicas: 1
 
   - type: build_model
-    name: test5
+    name: cancelld_flight_prediction
     entity_label: pr_model
     target_file_path: scripts/4_predict.py
     target_function_name: predict
@@ -87,13 +87,13 @@ tasks:
     memory: 16
     cpu: 8
 
-  - type: run_session
+  - type: Add_noise_to_data
     name: Add noise to data
     script: scripts/5_add_noise_data.py
     memory: 16
     cpu: 8
 
-  - type: run_session
+  - type: Run_Application
     name: Run Simulation
     script: scripts/6_simulate.py
     memory: 16
