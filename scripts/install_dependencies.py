@@ -50,4 +50,6 @@ except ModuleNotFoundError:
     with open('requirements.txt', 'w') as modified:
         modified.write(f"{cluster}\n" + reqs)
 
+!tar xzvf data/raw/preprocessed_flight_data.tgz --directory data/raw/
+
 !pip3 install -r requirements.txt 
