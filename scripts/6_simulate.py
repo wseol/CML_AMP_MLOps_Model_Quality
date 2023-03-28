@@ -64,7 +64,7 @@ prod_df = prod_df[features + ['id'] + ['date_forecast'] + ['date_departure'] + [
 
 
 sim = Simulation(
-    model_name="cancelld_flight_prediction", dev_mode='TRUE'
+    model_name="Canceled_Flight_Prediction", dev_mode='TRUE'
 )
 
 
