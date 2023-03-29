@@ -27,25 +27,33 @@ runtimes:
 tasks:
   - type: run_session
     name: Install Dependencies
-    script: scripts/install_dependencies.py
+    script: scripts/1_install_dependencies.py
+    short_summary: 1. Install Dependencies
+    long_summary: Install dependencies, set environment variables, and upload data
     memory: 16
     cpu: 8
 
   - type: run_session
     name: Load CSV to Hive
-    script: scripts/1_load_csv_to_hive.py
+    script: scripts/2_load_csv_to_hive.py
+    short_summary: 2. Load CSV to Hive
+    long_summary: Loading CSV to Hive using Spark
     memory: 16
     cpu: 8
 
   - type: run_session
     name: Prepare Data
-    script: scripts/2_prepare_data.py
+    script: scripts/3_prepare_data.py
+    short_summary: 3. Prepare Data
+    long_summary: Preparing data for model training
     memory: 16
     cpu: 8
 
   - type: run_session
     name: Train and save Model
-    script: scripts/3_train_and_save_model.py
+    script: scripts/4_train_and_save_model.py
+    short_summary: 4. Train and save Model
+    long_summary: Training model with experiments. Saving the model pipeline
     memory: 16
     cpu: 8
 
@@ -53,6 +61,7 @@ tasks:
     name: Flight_Cancellation_Prediction
     entity_label: pr_model
     description: .
+    short_summary: Create the Cancellation Prediction model API endpoint
     access_key_environment_variable: SHTM_ACCESS_KEY
     default_resources:
       cpu: 8
@@ -64,7 +73,7 @@ tasks:
   - type: build_model
     name: Flight_Cancellation_Prediction
     entity_label: pr_model
-    target_file_path: scripts/4_predict.py
+    target_file_path: scripts/6_predict.py
     target_function_name: predict
     examples:
       - request:
@@ -89,12 +98,13 @@ tasks:
 
   - type: run_session
     name: Add noise to data
-    script: scripts/5_add_noise_data.py
+    script: scripts/8_add_noise_data.py
+    short_summary: 8. Adding noise to data for mimicking Data Drift and Model Decay
     memory: 16
     cpu: 8
 
-  - type: run_session
+  - type: start_application
     name: Run Simulation
-    script: scripts/6_simulate.py
+    script: scripts/9_simulate.py
     memory: 16
     cpu: 8
