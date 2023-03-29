@@ -93,8 +93,8 @@ tasks:
   - type: deploy_model
     name: Price Regressor
     entity_label: pr_model
-    memory: 16
-    cpu: 8
+    memory: 8
+    cpu: 4
 
   - type: run_session
     name: Add noise to data
@@ -106,5 +106,5 @@ tasks:
   - type: start_application
     name: Run Simulation
     script: scripts/9_simulate.py
-    memory: 16
-    cpu: 8
+    memory: 8
+    cpu: 4
