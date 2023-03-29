@@ -100,8 +100,8 @@ tasks:
     name: Add noise to data
     script: scripts/8_add_noise_data.py
     short_summary: 8. Adding noise to data for mimicking Data Drift and Model Decay
-    memory: 16
-    cpu: 8
+    memory: 8
+    cpu: 4
 
   - type: start_application
     name: Run Simulation
