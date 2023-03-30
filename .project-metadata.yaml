@@ -103,7 +103,7 @@ tasks:
     memory: 8
     cpu: 4
 
-  - type: start_application
+  - type: run_session
     name: Run Simulation
     script: scripts/9_simulate.py
     memory: 8
